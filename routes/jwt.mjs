@@ -1,60 +1,21 @@
 import Router from 'koa-router';
-// import jwt from 'koa-jwt';
-// import config from '../services/config';
 import User from '../models/user';
+
 
 const router = new Router();
 
 router.post('/generate',
   async (ctx) => {
     const { request: { body } } = ctx;
+
+    let isAuth = false;
     const user = await User.findOne({ email: body.email });
-
-    if (!user) {
-      ctx.throw_and_log(404, `User "${body.email}" not found.`);
+    if (user) {
+      isAuth = await user.comparePassword(body.password);
     }
+    ctx.assert(isAuth, 403, 'L\'email et/ou le mot de passe ne correspond pas.');
 
-    if (!(await user.comparePassword(body.password))) {
-      ctx.throw_and_log(403, `Username and password do not match for user "${body.email}".`);
-    }
-
-    ctx.body = { token: user.emitJWT() };
-});
-//
-// router.post(
-//   '/renew',
-//   maskOutput,
-//   jwt({ secret: config.get('token:secret') }),
-//   async (ctx) => {
-//     const user = await User.findById(ctx.state.user.id);
-//     if (!user) {
-//       ctx.throw_and_log(404, `User "${ctx.state.user.id}" not found.`);
-//     }
-//     ctx.body = { token: user.emitJWT() };
-//   },
-// );
-//
-// router.get(
-//   '/user',
-//   maskOutput,
-//   jwt({ secret: config.get('token:secret') }),
-//   async (ctx) => {
-//     const user = await User.findById(ctx.state.user.id).lean();
-//     if (!user) {
-//       ctx.throw_and_log(404, `User "${ctx.state.user.id}" not found.`);
-//     }
-//     ctx.body = User.cleanObject(user);
-//   },
-// );
-//
-// router.get(
-//   '/user/campuses',
-//   maskOutput,
-//   jwt({ secret: config.get('token:secret') }),
-//   async (ctx) => {
-//     const u = await User.findById(ctx.state.user.id);
-//     ctx.body = await u.getCampusesAccessibles();
-//   },
-// );
+    ctx.body = { token: user.signJWT() };
+  });
 
 export default router.routes();
