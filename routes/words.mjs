@@ -10,9 +10,9 @@ router.get('/', async (ctx) => {
     .lean();
 });
 
-router.get('/:title', async (ctx) => {
-  const { title } = ctx.params;
-  ctx.body = await Word.find({ title }).lean();
+router.get('/:id', async (ctx) => {
+  const { id } = ctx.params;
+  ctx.body = await Word.find({ id }).lean();
 });
 
 router.get('/search', async (ctx) => {
@@ -30,7 +30,7 @@ router.get('/search', async (ctx) => {
     .lean();
 });
 
-router.post('/add', async (ctx) => {
+router.post('/', async (ctx) => {
   const { request: { body } } = ctx;
   const wordTitle = body.title.trim();
   const word = await Word.findOne(
