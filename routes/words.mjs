@@ -4,15 +4,13 @@ import Word from '../models/word';
 const router = new Router();
 
 router.get('/', async (ctx) => {
-  ctx.body = await Word.find()
-    .sort({ last_edit: -1 })
-    .limit(1)
-    .lean();
+  ctx.body = await Word.find().lean();
 });
 
-router.get('/:id', async (ctx) => {
-  const { id } = ctx.params;
-  ctx.body = await Word.find({ id }).lean();
+router.get('/last', async (ctx) => {
+  ctx.body = await Word.findOne()
+    .sort({ last_edit: -1 })
+    .lean();
 });
 
 router.get('/search', async (ctx) => {
@@ -22,12 +20,17 @@ router.get('/search', async (ctx) => {
       title:
         {
           $regex: title.trim(),
-          $option: 'i',
+          $options: 'i',
         },
     },
   )
-    .limit(4)
+    .sort({ title: 1 })
     .lean();
+});
+
+router.get('/:id', async (ctx) => {
+  const { id } = ctx.params;
+  ctx.body = await Word.findById(id).lean();
 });
 
 router.post('/', async (ctx) => {

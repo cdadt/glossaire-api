@@ -19,7 +19,7 @@ router.get('/search', async (ctx) => {
         },
     },
   )
-    .limit(4)
+    .sort({ title: 1 })
     .lean();
 });
 
