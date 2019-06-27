@@ -1,5 +1,7 @@
+import jwt from 'koa-jwt';
 import Router from 'koa-router';
 import Word from '../models/word';
+import config from '../services/config';
 
 const router = new Router();
 
@@ -33,21 +35,25 @@ router.get('/:id', async (ctx) => {
   ctx.body = await Word.findById(id).lean();
 });
 
-router.post('/', async (ctx) => {
-  const { request: { body } } = ctx;
-  const wordTitle = body.title.trim();
-  const word = await Word.findOne(
-    {
-      title:
-        {
-          $regex: wordTitle,
-          $options: 'i',
-        },
-    },
-  ).lean();
+router.post(
+  '/',
+  jwt({ secret: config.get('token:secret') }),
+  async (ctx) => {
+    const { request: { body } } = ctx;
+    const wordTitle = body.title.trim();
+    const word = await Word.findOne(
+      {
+        title:
+          {
+            $regex: wordTitle,
+            $options: 'i',
+          },
+      },
+    ).lean();
 
-  ctx.assert(!word, 409, `Le mot '${wordTitle}' existe déjà.'`);
-  ctx.body = await Word.create(body);
-});
+    ctx.assert(!word, 409, `Le mot '${wordTitle}' existe déjà.'`);
+    ctx.body = await Word.create(body);
+  },
+);
 
 export default router.routes();

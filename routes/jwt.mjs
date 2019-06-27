@@ -1,7 +1,6 @@
 import Router from 'koa-router';
 import User from '../models/user';
 
-
 const router = new Router();
 
 router.post('/generate',
@@ -9,7 +8,7 @@ router.post('/generate',
     const { request: { body } } = ctx;
 
     let isAuth = false;
-    const user = await User.findOne({ email: body.email });
+    const user = await User.findOne({ username: body.username });
     if (user) {
       isAuth = await user.comparePassword(body.password);
     }
