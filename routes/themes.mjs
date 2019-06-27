@@ -23,6 +23,10 @@ router.get('/search', async (ctx) => {
     .lean();
 });
 
+router.get('/:id', async (ctx) => {
+  const { id } = ctx.params;
+  ctx.body = await Theme.findById(id).lean();
+});
 
 router.get('/:id/words', async (ctx) => {
   const { id } = ctx.params;
