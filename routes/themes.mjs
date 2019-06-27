@@ -25,8 +25,8 @@ router.get('/search', async (ctx) => {
 
 
 router.get('/:id/words', async (ctx) => {
-  const { id } = ctx.query;
-  ctx.body = await Word.find({ 'themes.id': id }).lean();
+  const { id } = ctx.params;
+  ctx.body = await Word.find({ 'themes._id': id }).lean();
 });
 
 
