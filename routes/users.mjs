@@ -7,9 +7,9 @@ const router = new Router();
 
 router.get(
   '/',
-  // jwt({ secret: config.get('token:secret') }),
+  jwt({ secret: config.get('token:secret') }),
   async (ctx) => {
-    ctx.body = User.find().lean();
+    ctx.body = await User.find().lean();
   },
 );
 
