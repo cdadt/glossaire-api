@@ -50,11 +50,13 @@ router.post('/subscribers', async (ctx) => {
   ctx.body = await Subscriber.create(body);
 });
 
-router.delete('/subscribers/:sub', async (ctx) => {
-  console.log('ok');
-  const { sub } = ctx.params;
-  console.log(sub);
-  ctx.body = await Subscriber.deleteOne({ endpoint: sub });
+router.delete('/subscribers/:idEndpoint', async (ctx) => {
+  const { idEndpoint } = ctx.params;
+  ctx.body = await Subscriber.deleteOne({
+    endpoint: {
+      $regex: idEndpoint,
+    },
+  });
 });
 
 export default router.routes();
