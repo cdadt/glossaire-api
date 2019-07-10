@@ -14,28 +14,27 @@ webPush.setVapidDetails(
 );
 
 router.post('/', async (ctx) => {
-  const { request: { body } } = ctx;
-
-  const allSubscriptions = await Subscriber.find();
-  const notificationPayload = {
-    notification: {
-      title: `Une définition vient d'être ajoutée : ${body.title}.`,
-      body: `La définition du mot ${body.title} vient d'être ajoutée par ${body.user}.`,
-      icon: 'assets/img/logo_carre.png',
-      vibrate: [100, 50, 100],
-      data: {
-        dateOfArrival: Date.now(),
-        primaryKey: 1,
-        url: `https://glossaire.alwaysdata.net/definition/${body.title}`,
-      },
-      actions: [{
-        action: 'explore',
-        title: 'Consulter la définition',
-      }],
-    },
-  };
-
   try {
+    const { request: { body } } = ctx;
+
+    const allSubscriptions = await Subscriber.find();
+    const notificationPayload = {
+      notification: {
+        title: `Une définition vient d'être ajoutée : ${body.title}.`,
+        body: `La définition du mot ${body.title} vient d'être ajoutée par ${body.user}.`,
+        icon: 'assets/img/logo_carre.png',
+        vibrate: [100, 50, 100],
+        data: {
+          dateOfArrival: Date.now(),
+          primaryKey: 1,
+          url: `https://glossaire.alwaysdata.net/definition/${body.title}`,
+        },
+        actions: [{
+          action: 'explore',
+          title: 'Consulter la définition',
+        }],
+      },
+    };
     allSubscriptions.forEach(async (sub) => {
       await webPush.sendNotification(sub, JSON.stringify(notificationPayload));
     });
