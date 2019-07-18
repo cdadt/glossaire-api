@@ -21,3 +21,11 @@ script:
   - ng test --watch false -cc
   - npm run e2e
   - ng build -bh "https://github.com/cdadt/glossaire-api"
+
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: $GITHUB_TOKEN
+  local_dir: dist
+  on:
+    branch: master
