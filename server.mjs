@@ -12,4 +12,4 @@ const app = new Koa();
 app.use(cors());
 app.use(bodyParser());
 app.use(routes);
-app.listen(config.get('port'), config.get('ip'));
+app.listen(2223);
