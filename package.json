@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "mocha --experimental-modules --exit --require @std/esm --recursive \"test/*.mjs\""
+    "test": "nyc --reporter=text mocha --experimental-modules --exit --require @std/esm --recursive \"test/*.mjs\""
   },
   "dependencies": {
     "@koa/cors": "^2.2.3",
@@ -21,12 +21,13 @@
   "devDependencies": {
     "@std/esm": "^0.26.0",
     "acorn": "^6.1.1",
-    "chai": "^4.2.0",
     "babel-eslint": "^10.0.1",
+    "chai": "^4.2.0",
     "eslint": "^5.16.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.17.2",
     "mocha": "^6.0.2",
+    "nyc": "^14.1.1",
     "supertest": "^4.0.2"
   }
 }

@@ -33,6 +33,12 @@
 dist: trusty
 sudo: false
 
+addons:
+  sonarcloud:
+    organization: "cdadt"
+    token:
+      secure: 905f5eba405b0bafc9adf9f2026d30a3943f2052 # encrypted value of your token
+
 language: node_js
 node_js:
   - "10"
@@ -46,3 +52,4 @@ install:
 
 script:
   - npm run test
+  - sonar-scanner
