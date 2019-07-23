@@ -1,0 +1,55 @@
+#language: node_js
+#node_js:
+#  - "7"
+#sudo: true
+#dist: trusty
+#
+#branches:
+#  only:
+#    - master
+#
+#before_script:
+#  - export CHROME_BIN=/usr/bin/google-chrome
+#  - export DISPLAY=:99.0
+#  - sh -e /etc/init.d/xvfb start
+#  - sudo apt-get update
+#  - sudo apt-get install -y libappindicator1 fonts-liberation ng-common
+#  - wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+#  - sudo dpkg -i google-chrome*.deb
+#
+#script:
+#  - ng test --watch false -cc
+#  - npm run e2e
+#  - ng build -bh "https://github.com/cdadt/glossaire-api"
+#
+#deploy:
+#  provider: pages
+#  skip_cleanup: true
+#  github_token: $GITHUB_TOKEN
+#  local_dir: dist
+#  on:
+#    branch: master
+
+dist: trusty
+sudo: false
+
+addons:
+  sonarcloud:
+    organization: "cdadt"
+    token:
+      secure: 905f5eba405b0bafc9adf9f2026d30a3943f2052 # encrypted value of your token
+
+language: node_js
+node_js:
+  - "10"
+
+cache:
+  directories:
+    - ./node_modules
+
+install:
+  - npm install
+
+script:
+  - npm run test
+  - sonar-scanner
