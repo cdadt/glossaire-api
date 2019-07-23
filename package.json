@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "nyc --reporter=text mocha --experimental-modules --exit --require @std/esm --recursive \"test/*.mjs\""
+    "test": "nyc --reporter=lcov mocha --experimental-modules --exit --require @std/esm --recursive \"test/*.mjs\""
   },
   "dependencies": {
     "@koa/cors": "^2.2.3",
