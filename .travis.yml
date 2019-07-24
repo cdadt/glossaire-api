@@ -48,6 +48,7 @@ cache:
     - ./node_modules
 
 install:
+  - ls -al
   - npm install
 
 script:
