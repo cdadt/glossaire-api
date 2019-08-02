@@ -30,6 +30,16 @@ router.get('/search', async (ctx) => {
     .lean();
 });
 
+router.get('/search-exact', async (ctx) => {
+  const { title } = ctx.query;
+  ctx.body = await Word.find(
+    {
+      title,
+    },
+  )
+    .lean();
+});
+
 router.get('/:id', async (ctx) => {
   const { id } = ctx.params;
   ctx.body = await Word.findById(id).lean();
