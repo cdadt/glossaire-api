@@ -23,6 +23,7 @@ router.get('/search', async (ctx) => {
           $regex: title.trim(),
           $options: 'i',
         },
+      published: 'true',
     },
   )
     .sort({ title: 1 })
@@ -47,6 +48,16 @@ router.delete('/',
     ctx.body = await Theme.deleteOne({ _id: themeId }).lean();
   });
 
+router.patch('/published',
+  async (ctx) => {
+    const { themeId } = ctx.request.body.params;
+    const { themePub } = ctx.request.body.params;
+
+    ctx.body = await Theme.updateOne(
+      { _id: themeId }, { published: themePub },
+    ).lean();
+  });
+
 router.post(
   '/',
   upload.single('image', 'png'),
@@ -57,6 +68,7 @@ router.post(
     const themeTitle = ctx.req.body.title.trim();
 
     newTheme.title = themeTitle;
+    newTheme.published = ctx.req.body.published;
 
     if (ctx.req.file) {
       newTheme.img.data = ctx.req.file.buffer;
