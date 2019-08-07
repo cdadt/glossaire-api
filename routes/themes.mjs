@@ -39,6 +39,14 @@ router.get('/:id/words', async (ctx) => {
   ctx.body = await Word.find({ 'themes._id': id }).lean();
 });
 
+router.delete('/',
+  jwt({ secret: config.get('token:secret') }),
+  async (ctx) => {
+    const { themeId } = ctx.query;
+
+    ctx.body = await Theme.deleteOne({ _id: themeId }).lean();
+  });
+
 router.post(
   '/',
   upload.single('image', 'png'),
