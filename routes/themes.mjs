@@ -48,6 +48,28 @@ router.delete('/',
     ctx.body = await Theme.deleteOne({ _id: themeId }).lean();
   });
 
+router.put('/',
+  upload.single('image', 'png'),
+  async (ctx) => {
+    const theme = ctx.req.body;
+
+    const newTheme = new Theme();
+
+    newTheme._id = theme._id;
+    newTheme.title = theme.title;
+    newTheme.published = theme.published;
+
+    if (ctx.req.file) {
+      newTheme.img.data = ctx.req.file.buffer;
+      newTheme.img.contentType = ctx.req.file.mimetype;
+      newTheme.img.size = theme.imageSize;
+    }
+
+    ctx.body = await Theme.replaceOne(
+      { _id: theme._id }, newTheme,
+    ).lean();
+  });
+
 router.patch('/published',
   async (ctx) => {
     const { themeId } = ctx.request.body.params;
@@ -65,27 +87,26 @@ router.post(
   async (ctx) => {
     const newTheme = new Theme();
 
-    const themeTitle = ctx.req.body.title.trim();
-
-    newTheme.title = themeTitle;
+    newTheme.title = ctx.req.body.title.trim();
     newTheme.published = ctx.req.body.published;
 
     if (ctx.req.file) {
       newTheme.img.data = ctx.req.file.buffer;
       newTheme.img.contentType = ctx.req.file.mimetype;
+      newTheme.img.size = ctx.req.body.imageSize;
     }
 
     const theme = await Theme.findOne(
       {
         title:
             {
-              $regex: themeTitle,
+              $regex: newTheme.title,
               $options: 'i',
             },
       },
     ).lean();
 
-    ctx.assert(!theme, 409, `Le thème '${themeTitle}' existe déjà.`);
+    ctx.assert(!theme, 409, `Le thème '${newTheme.title}' existe déjà.`);
     ctx.body = await Theme.create(newTheme);
   },
 );

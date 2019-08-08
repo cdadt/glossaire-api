@@ -4,7 +4,7 @@ const { Schema } = mongoose;
 
 const ThemeSchema = new Schema({
   title: { type: String, required: true, unique: true },
-  img: { data: Buffer, contentType: String },
+  img: { data: Buffer, contentType: String, size: String },
   published: { type: String, required: true },
 });
 
