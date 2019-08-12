@@ -16,18 +16,34 @@ router.get('/', async (ctx) => {
 
 router.get('/search', async (ctx) => {
   const { title } = ctx.query;
-  ctx.body = await Theme.find(
-    {
-      title:
-        {
-          $regex: title.trim(),
-          $options: 'i',
-        },
-      published: 'true',
-    },
-  )
-    .sort({ title: 1 })
-    .lean();
+  const { pubOption } = ctx.query;
+
+  if (pubOption === '') {
+    ctx.body = await Theme.find(
+      {
+        title:
+          {
+            $regex: title.trim(),
+            $options: 'i',
+          },
+      },
+    )
+      .sort({ title: 1 })
+      .lean();
+  } else {
+    ctx.body = await Theme.find(
+      {
+        title:
+          {
+            $regex: title.trim(),
+            $options: 'i',
+          },
+        published: pubOption,
+      },
+    )
+      .sort({ title: 1 })
+      .lean();
+  }
 });
 
 router.get('/:id', async (ctx) => {
