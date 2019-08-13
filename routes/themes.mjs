@@ -90,7 +90,11 @@ router.patch('/published',
   async (ctx) => {
     const { themeId } = ctx.request.body.params;
     const { themePub } = ctx.request.body.params;
+    // On met à jour les thèmes des mots
+    await Word.updateMany({}, { $set: { 'themes.$[elem].published': themePub } },
+      { arrayFilters: [{ 'elem._id': themeId }] });
 
+    // On met à jour le thème lui-même
     ctx.body = await Theme.updateOne(
       { _id: themeId }, { published: themePub },
     ).lean();

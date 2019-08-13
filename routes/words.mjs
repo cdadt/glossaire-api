@@ -10,24 +10,41 @@ router.get('/', async (ctx) => {
 });
 
 router.get('/last', async (ctx) => {
-  ctx.body = await Word.findOne()
+  ctx.body = await Word.findOne({ 'themes.published': 'true' })
     .sort({ last_edit: -1 })
     .lean();
 });
 
 router.get('/search', async (ctx) => {
   const { title } = ctx.query;
-  ctx.body = await Word.find(
-    {
-      title:
-        {
-          $regex: title.trim(),
-          $options: 'i',
-        },
-    },
-  )
-    .sort({ title: 1 })
-    .lean();
+  const { pubOption } = ctx.query;
+
+  if (pubOption === '') {
+    ctx.body = await Word.find(
+      {
+        title:
+          {
+            $regex: title.trim(),
+            $options: 'i',
+          },
+      },
+    )
+      .sort({ title: 1 })
+      .lean();
+  } else {
+    ctx.body = await Word.find(
+      {
+        title:
+          {
+            $regex: title.trim(),
+            $options: 'i',
+          },
+        'themes.published': pubOption,
+      },
+    )
+      .sort({ title: 1 })
+      .lean();
+  }
 });
 
 router.get('/search-exact', async (ctx) => {
