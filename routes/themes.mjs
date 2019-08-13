@@ -61,6 +61,12 @@ router.delete('/',
   async (ctx) => {
     const { themeId } = ctx.query;
 
+    const word = await Word.findOne(
+      { 'themes._id': themeId },
+    ).lean();
+
+    ctx.assert(!word, 409, 'Veuillez déplacer les définitions liées à ce thème avant la suppression.');
+
     ctx.body = await Theme.deleteOne({ _id: themeId }).lean();
   });
 
