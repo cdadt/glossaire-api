@@ -65,7 +65,7 @@ router.delete('/',
       { 'themes._id': themeId },
     ).lean();
 
-    ctx.assert(!word, 409, 'Veuillez déplacer les définitions liées à ce thème avant la suppression.');
+    ctx.assert(!word, 403, 'Veuillez déplacer les définitions liées à ce thème avant la suppression.');
 
     ctx.body = await Theme.deleteOne({ _id: themeId }).lean();
   });
@@ -97,8 +97,7 @@ router.patch('/published',
     const { themeId } = ctx.request.body.params;
     const { themePub } = ctx.request.body.params;
     // On met à jour les thèmes des mots
-    await Word.updateMany({}, { $set: { 'themes.$[elem].published': themePub } },
-      { arrayFilters: [{ 'elem._id': themeId }] });
+    await Word.updateMany({ 'themes._id': themeId }, { $set: { 'themes.$.published': themePub } });
 
     // On met à jour le thème lui-même
     ctx.body = await Theme.updateOne(
