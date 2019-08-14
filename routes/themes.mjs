@@ -67,7 +67,7 @@ router.delete('/',
 
     ctx.assert(!word, 403, 'Veuillez déplacer les définitions liées à ce thème avant la suppression.');
 
-    ctx.body = await Theme.deleteOne({ _id: themeId }).lean();
+    ctx.body = await Theme.deleteOne({ _id: themeId });
   });
 
 router.put('/',
@@ -75,21 +75,25 @@ router.put('/',
   async (ctx) => {
     const theme = ctx.req.body;
 
-    const newTheme = new Theme();
-
-    newTheme._id = theme._id;
-    newTheme.title = theme.title;
-    newTheme.published = theme.published;
+    await Word.updateMany({ 'themes._id': theme._id }, { $set: { 'themes.$.title': theme.title } });
 
     if (ctx.req.file) {
-      newTheme.img.data = ctx.req.file.buffer;
-      newTheme.img.contentType = ctx.req.file.mimetype;
-      newTheme.img.size = theme.imageSize;
+      ctx.body = await Theme.updateOne(
+        { _id: theme._id }, {
+          $set:
+            {
+              title: theme.title,
+              'img.data': ctx.req.file.buffer,
+              'img.contentType': ctx.req.file.mimetype,
+              'img.size': theme.imageSize,
+            },
+        },
+      );
+    } else {
+      ctx.body = await Theme.updateOne(
+        { _id: theme._id }, { $set: { title: theme.title } },
+      );
     }
-
-    ctx.body = await Theme.replaceOne(
-      { _id: theme._id }, newTheme,
-    ).lean();
   });
 
 router.patch('/published',
@@ -102,7 +106,7 @@ router.patch('/published',
     // On met à jour le thème lui-même
     ctx.body = await Theme.updateOne(
       { _id: themeId }, { published: themePub },
-    ).lean();
+    );
   });
 
 router.post(
