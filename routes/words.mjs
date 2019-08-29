@@ -1,9 +1,13 @@
 import jwt from 'koa-jwt';
 import Router from 'koa-router';
+import Multer from 'koa-multer';
 import Word from '../models/word';
 import config from '../services/config';
 
 const router = new Router();
+// const upload = Multer({ dest: 'uploads/' });
+const storage = Multer.memoryStorage();
+const upload = Multer({ storage });
 
 router.get('/', async (ctx) => {
   ctx.body = await Word.find().lean();
@@ -64,22 +68,37 @@ router.get('/:id', async (ctx) => {
 
 router.post(
   '/',
+  upload.single('image', 'png'),
   jwt({ secret: config.get('token:secret') }),
   async (ctx) => {
-    const { request: { body } } = ctx;
-    const wordTitle = body.title.trim();
+    const wordInfo = JSON.parse(ctx.req.body.wordInfo);
+    const newWord = new Word();
+
+    if (ctx.req.file) {
+      newWord.img.data = ctx.req.file.buffer;
+      newWord.img.contentType = ctx.req.file.mimetype;
+      newWord.img.size = ctx.req.body.imageSize;
+    }
+    newWord.title = wordInfo.title;
+    newWord.definition = wordInfo.definition;
+    newWord.know_more = wordInfo.know_more;
+    newWord.themes = wordInfo.themes;
+    newWord.last_edit = wordInfo.last_edit;
+    newWord.published = wordInfo.published;
+    newWord.legend = wordInfo.legend;
+
     const word = await Word.findOne(
       {
         title:
           {
-            $regex: wordTitle,
+            $regex: wordInfo.title,
             $options: 'i',
           },
       },
     ).lean();
 
-    ctx.assert(!word, 409, `Le mot '${wordTitle}' existe déjà.'`);
-    ctx.body = await Word.create(body);
+    ctx.assert(!word, 409, `Le mot '${wordInfo.title}' existe déjà.'`);
+    ctx.body = await Word.create(newWord);
   },
 );
 

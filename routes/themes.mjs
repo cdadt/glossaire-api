@@ -11,7 +11,13 @@ const storage = Multer.memoryStorage();
 const upload = Multer({ storage });
 
 router.get('/', async (ctx) => {
-  ctx.body = await Theme.find().lean();
+  const { pubOption } = ctx.query;
+
+  if (pubOption === '') {
+    ctx.body = await Theme.find().lean();
+  } else {
+    ctx.body = await Theme.find({ published: pubOption }).lean();
+  }
 });
 
 router.get('/search', async (ctx) => {
