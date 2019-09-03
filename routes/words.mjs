@@ -3,6 +3,7 @@ import Router from 'koa-router';
 import Multer from 'koa-multer';
 import Word from '../models/word';
 import config from '../services/config';
+import Theme from '../models/theme';
 
 const router = new Router();
 // const upload = Multer({ dest: 'uploads/' });
@@ -14,7 +15,11 @@ router.get('/', async (ctx) => {
 });
 
 router.get('/last', async (ctx) => {
-  ctx.body = await Word.findOne({ 'themes.published': 'true' })
+  ctx.body = await Word.findOne({
+    'themes.published': 'true',
+    validated: true,
+    published: true,
+  })
     .sort({ last_edit: -1 })
     .lean();
 });
@@ -44,6 +49,8 @@ router.get('/search', async (ctx) => {
             $options: 'i',
           },
         'themes.published': pubOption,
+        validated: true,
+        published: true,
       },
     )
       .sort({ title: 1 })
@@ -66,6 +73,28 @@ router.get('/:id', async (ctx) => {
   ctx.body = await Word.findById(id).lean();
 });
 
+router.patch('/published',
+  async (ctx) => {
+    const { wordId } = ctx.request.body.params;
+    const { wordPub } = ctx.request.body.params;
+
+    // On met à jour le thème lui-même
+    ctx.body = await Word.updateOne(
+      { _id: wordId }, { published: wordPub },
+    ).lean();
+  });
+
+router.patch('/validate',
+  async (ctx) => {
+    const { wordId } = ctx.request.body.params;
+    const { wordVali } = ctx.request.body.params;
+
+    // On met à jour le thème lui-même
+    ctx.body = await Word.updateOne(
+      { _id: wordId }, { validated: wordVali },
+    ).lean();
+  });
+
 router.post(
   '/',
   upload.single('image', 'png'),
@@ -86,6 +115,7 @@ router.post(
     newWord.last_edit = wordInfo.last_edit;
     newWord.published = wordInfo.published;
     newWord.legend = wordInfo.legend;
+    newWord.validated = wordInfo.validated;
 
     const word = await Word.findOne(
       {
@@ -101,5 +131,13 @@ router.post(
     ctx.body = await Word.create(newWord);
   },
 );
+
+router.delete('/',
+  jwt({ secret: config.get('token:secret') }),
+  async (ctx) => {
+    const { wordId } = ctx.query;
+
+    ctx.body = await Word.deleteOne({ _id: wordId }).lean();
+  });
 
 export default router.routes();
