@@ -12,7 +12,7 @@ const WordSchema = new Schema({
   themes: [{
     _id: { type: Schema.ObjectId, required: true, alias: 'themes.id' },
     title: { type: String, required: true },
-    published: { type: String, required: true },
+    published: { type: Boolean, required: true },
   }],
   legend: String,
   validated: Boolean,
