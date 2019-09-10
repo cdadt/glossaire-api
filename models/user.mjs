@@ -12,6 +12,8 @@ const UserSchema = new Schema({
   password: { type: String, required: true },
   firstname: String,
   lastname: String,
+  permissions: [Number],
+  activated: { type: Boolean, default: false },
 });
 
 UserSchema.pre('save', function preSave(next) {
