@@ -27,34 +27,23 @@ router.get('/search', async (ctx) => {
   const { title } = ctx.query;
   const { pubOption } = ctx.query;
 
-  if (pubOption === '') {
-    ctx.body = await Word.find(
-      {
-        title:
-          {
-            $regex: title.trim(),
-            $options: 'i',
-          },
-      },
-    )
-      .sort({ title: 1 })
-      .lean();
-  } else {
-    ctx.body = await Word.find(
-      {
-        title:
-          {
-            $regex: title.trim(),
-            $options: 'i',
-          },
-        'themes.published': pubOption,
-        validated: true,
-        published: true,
-      },
-    )
-      .sort({ title: 1 })
-      .lean();
+  const result = {
+    title:
+            {
+              $regex: title.trim(),
+              $options: 'i',
+            },
+  };
+
+  if (pubOption !== '') {
+    result.validated = pubOption;
+    result.published = true;
+    result['themes.published'] = true;
   }
+
+  ctx.body = await Word.find(result)
+    .sort({ title: 1 })
+    .lean();
 });
 
 router.get('/search-exact', async (ctx) => {
