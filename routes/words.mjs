@@ -3,7 +3,6 @@ import Router from 'koa-router';
 import Multer from 'koa-multer';
 import Word from '../models/word';
 import config from '../services/config';
-import Theme from '../models/theme';
 
 const router = new Router();
 // const upload = Multer({ dest: 'uploads/' });
@@ -82,6 +81,65 @@ router.patch('/published',
     ctx.body = await Word.updateOne(
       { _id: wordId }, { published: wordPub },
     ).lean();
+  });
+
+router.put('/edit',
+  upload.single('image'),
+  async (ctx) => {
+    const { wordId } = ctx.req.body;
+    const { elemToEdit } = ctx.req.body;
+    const elemToEditValue = JSON.parse(ctx.req.body.elemToEditValue);
+
+    // On met à jour le titre en vérifiant qu'il n'est déjà pas utilisé
+    if (elemToEdit === 'title') {
+      const word = await Word.findOne(
+        {
+          title:
+            {
+              $regex: elemToEditValue,
+              $options: 'i',
+            },
+        },
+      ).lean();
+
+      if (word && word._id.toString() !== wordId) {
+        ctx.assert(!word, 409, `Le mot '${elemToEditValue}' existe déjà.'`);
+      }
+
+      ctx.body = await Word.updateOne(
+        { _id: wordId }, { title: elemToEditValue, last_edit: Date.now() },
+      ).lean();
+    }
+
+    // OU on met à jour les éléments qui n'ont pas de particularité
+    if (elemToEdit !== 'image' && elemToEdit !== 'title') {
+      const modifierObject = {
+        last_edit: Date.now(),
+      };
+      modifierObject[elemToEdit] = elemToEditValue;
+      ctx.body = await Word.updateOne(
+        { _id: wordId }, modifierObject,
+      ).lean();
+    }
+
+    // OU on met à jour l'image (si l'élément à modifier est une image et qu'il y a un fichier)
+    if (ctx.req.file && elemToEdit === 'image') {
+      ctx.body = await Word.updateOne(
+        { _id: wordId }, {
+          'img.data': ctx.req.file.buffer,
+          'img.contentType': ctx.req.file.mimetype,
+          'img.size': ctx.req.body.imageSize,
+          last_edit: Date.now(),
+        },
+      ).lean();
+    }
+
+    // OU on supprime l'image (si l'élément à modifier est une image et qu'il n'y a pas de fichier)
+    if (!ctx.req.file && elemToEdit === 'image') {
+      ctx.body = await Word.updateOne(
+        { _id: wordId }, { $unset: { img: 1, legend: 1 }, last_edit: Date.now() },
+      ).lean();
+    }
   });
 
 router.patch('/validate',
