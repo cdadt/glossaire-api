@@ -56,6 +56,14 @@ router.get('/search-exact', async (ctx) => {
     .lean();
 });
 
+router.get('/count-waiting', async (ctx) => {
+  ctx.body = await Word.where({ validated: 'false' }).countDocuments();
+});
+
+router.get('/get-waiting', async (ctx) => {
+  ctx.body = await Word.find().or([{ validated: 'false' }, { published: 'false' }]);
+});
+
 router.get('/:id', async (ctx) => {
   const { id } = ctx.params;
   ctx.body = await Word.findById(id).lean();
