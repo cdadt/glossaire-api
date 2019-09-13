@@ -15,7 +15,7 @@ router.get('/', async (ctx) => {
 
 router.get('/last', async (ctx) => {
   ctx.body = await Word.findOne({
-    'themes.published': 'true',
+    'themes.published': true,
     validated: true,
     published: true,
   })
