@@ -14,6 +14,13 @@ const UserSchema = new Schema({
   lastname: String,
   permissions: [Number],
   activated: { type: Boolean, default: false },
+  bookmark: [{
+    _id: { type: Schema.ObjectId, required: true, alias: 'bookmark.id' },
+    title: { type: String, required: true },
+    definition: { type: String, required: true },
+    validated: { type: Boolean, required: true },
+    published: { type: Boolean, required: true },
+  }],
 });
 
 UserSchema.pre('save', function preSave(next) {

@@ -3,6 +3,7 @@ import Router from 'koa-router';
 import Multer from 'koa-multer';
 import Word from '../models/word';
 import config from '../services/config';
+import User from '../models/user';
 
 const router = new Router();
 // const upload = Multer({ dest: 'uploads/' });
@@ -36,8 +37,8 @@ router.get('/search', async (ctx) => {
   };
 
   if (pubOption !== '') {
-    result.validated = pubOption;
-    result.published = true;
+    result.validated = true;
+    result.published = pubOption;
     result['themes.published'] = true;
   }
 
@@ -66,13 +67,25 @@ router.get('/get-waiting', async (ctx) => {
 
 router.get('/:id', async (ctx) => {
   const { id } = ctx.params;
-  ctx.body = await Word.findById(id).lean();
+  const word = await Word.findById(id).lean();
+  if (!word.validated || !word.published) {
+    const wordSimplified = new Word();
+    wordSimplified._id = word._id;
+    wordSimplified.title = word.title;
+    wordSimplified.published = word.published;
+    wordSimplified.validated = word.validated;
+    ctx.body = wordSimplified;
+  } else {
+    ctx.body = word;
+  }
 });
 
 router.patch('/published',
   async (ctx) => {
     const { wordId } = ctx.request.body.params;
     const { wordPub } = ctx.request.body.params;
+
+    await User.updateMany({ 'bookmark._id': wordId }, { $set: { 'bookmark.$.published': wordPub } });
 
     // On met à jour le thème lui-même
     ctx.body = await Word.updateOne(
@@ -144,6 +157,8 @@ router.patch('/validate',
     const { wordId } = ctx.request.body.params;
     const { wordVali } = ctx.request.body.params;
 
+    await User.updateMany({ 'bookmark._id': wordId }, { $set: { 'bookmark.$.validated': wordVali } });
+
     // On met à jour le thème lui-même
     ctx.body = await Word.updateOne(
       { _id: wordId }, { validated: wordVali },
@@ -191,6 +206,11 @@ router.delete('/',
   jwt({ secret: config.get('token:secret') }),
   async (ctx) => {
     const { wordId } = ctx.query;
+
+    await User.updateMany(
+      {},
+      { $pull: { bookmark: { _id: wordId } } },
+    ).lean();
 
     ctx.body = await Word.deleteOne({ _id: wordId }).lean();
   });

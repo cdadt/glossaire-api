@@ -17,34 +17,39 @@ router.get('/search',
   jwt({ secret: config.get('token:secret') }),
   async (ctx) => {
     const { username } = ctx.query;
-    const { pubOption } = ctx.query;
+    const user = await User.find(
+      {
+        username:
+            {
+              $regex: username.trim(),
+              $options: 'i',
+            },
+      },
+    )
+      .sort({ title: 1 })
+      .lean();
 
-    if (pubOption === '') {
-      ctx.body = await User.find(
-        {
-          username:
-            {
-              $regex: username.trim(),
-              $options: 'i',
-            },
-        },
-      )
-        .sort({ title: 1 })
-        .lean();
-    } else {
-      ctx.body = await User.find(
-        {
-          username:
-            {
-              $regex: username.trim(),
-              $options: 'i',
-            },
-          'themes.published': pubOption,
-        },
-      )
-        .sort({ title: 1 })
-        .lean();
+    for (let i = 0; i < user.length; i += 1) {
+      for (let j = 0; j < user[i].bookmark.length; j += 1) {
+        if (!user[i].bookmark[j].published || !user[i].bookmark[j].validated) {
+          delete user[i].bookmark[j].definition;
+        }
+      }
     }
+
+    ctx.body = user;
+  });
+
+router.get('/bookmarkpresence',
+  jwt({ secret: config.get('token:secret') }),
+  async (ctx) => {
+    const { query } = ctx;
+    const { userID } = query;
+    const { wordID } = query;
+
+    // On vérifie qu'utilisateur existe combinant l'id du user ainsi que l'id du favoris
+    const user = await User.findOne({ _id: userID, 'bookmark._id': wordID });
+    ctx.body = !!user;
   });
 
 router.get('/:id',
@@ -75,6 +80,37 @@ router.post(
     ctx.body = User.create(body);
   },
 );
+
+router.delete('/bookmark',
+  jwt({ secret: config.get('token:secret') }),
+  async (ctx) => {
+    const { userID } = ctx.query;
+    const { wordID } = ctx.query;
+
+    ctx.body = await User.updateOne(
+      { _id: userID },
+      { $pull: { bookmark: { _id: wordID } } },
+    ).lean();
+  });
+
+router.post('/bookmark',
+  jwt({ secret: config.get('token:secret') }),
+  async (ctx) => {
+    const { request: { body } } = ctx;
+    const { userID } = body;
+    const { bookmark } = body;
+
+    // On vérifie si que l'username n'est pas déjà utilisé
+    const user = await User.findOne({ 'bookmark.id': body.bookmark._id });
+    if (user) {
+      ctx.assert(!user, 409, 'Vous possédez déjà ce favori.');
+    }
+
+    ctx.body = await User.updateOne(
+      { _id: userID },
+      { $push: { bookmark } },
+    ).lean();
+  });
 
 router.post(
   '/update',
