@@ -139,6 +139,7 @@ router.post(
         user.firstname = body.firstname;
         user.lastname = body.lastname;
         user.activated = body.activated;
+        user.permissions = body.permissions;
 
         ctx.body = await user.save();
       }

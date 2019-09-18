@@ -12,7 +12,7 @@ const UserSchema = new Schema({
   password: { type: String, required: true },
   firstname: String,
   lastname: String,
-  permissions: [Number],
+  permissions: Number,
   activated: { type: Boolean, default: false },
   bookmark: [{
     _id: { type: Schema.ObjectId, required: true, alias: 'bookmark.id' },
