@@ -2,6 +2,7 @@ import jwt from 'koa-jwt';
 import Router from 'koa-router';
 import User from '../models/user';
 import config from '../services/config';
+import { sendEmail } from '../helpers/send-email';
 
 const router = new Router();
 
@@ -30,9 +31,11 @@ router.get('/search',
       .lean();
 
     for (let i = 0; i < user.length; i += 1) {
-      for (let j = 0; j < user[i].bookmark.length; j += 1) {
-        if (!user[i].bookmark[j].published || !user[i].bookmark[j].validated) {
-          delete user[i].bookmark[j].definition;
+      if (user[i].bookmark) {
+        for (let j = 0; j < user[i].bookmark.length; j += 1) {
+          if (!user[i].bookmark[j].published || !user[i].bookmark[j].validated) {
+            delete user[i].bookmark[j].definition;
+          }
         }
       }
     }
@@ -50,6 +53,64 @@ router.get('/bookmarkpresence',
     // On vérifie qu'utilisateur existe combinant l'id du user ainsi que l'id du favoris
     const user = await User.findOne({ _id: userID, 'bookmark._id': wordID });
     ctx.body = !!user;
+  });
+
+router.patch('/forgotten-psw',
+  async (ctx) => {
+    console.log('test');
+    const { email } = ctx.request.body.params;
+
+    // On vérifie que l'user existe et on récupère ses informations
+    const user = await User.findOne({ email });
+    if (user) {
+      const reinitiateCode = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+      const message = `<!DOCTYPE html>
+        <html lang="fr">
+          <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>Réinitialisation de mot de passe</title>
+          </head>
+          <body>
+            <p>Bonjour ${user.firstname},</p>
+            <p>Veuillez cliquez sur le lien suivant pour réinitialiser votre mot de passe :</p>
+            <a href="https://angular-test.alwaysdata.net/reinitialiser-mot-de-passe/${reinitiateCode}">
+            Réinitialiser le mot de passe.</a>
+            <p>Cordialement, l'équipe du Glossaire</p>
+          </body>
+        </html>`;
+
+
+      const subject = 'Réinitialisation de mot de passe.';
+
+      sendEmail(email, message, subject);
+
+      await User.updateOne({ _id: user._id.toString() }, { $set: { reinitiate_code: reinitiateCode } });
+    }
+
+    ctx.body = !!user;
+  });
+
+router.patch('/change-psw',
+  async (ctx) => {
+    const { code } = ctx.request.body.params;
+    const { psw } = ctx.request.body.params;
+    const user = await User.findOne({ reinitiate_code: code });
+
+    await User.updateOne(
+      { reinitiate_code: code },
+      { $unset: { reinitiate_code: 1 } },
+    ).lean();
+
+    user.password = psw;
+
+    ctx.body = await user.save();
+  });
+
+router.get('/verif-reset-psw-code/:code',
+  async (ctx) => {
+    const { code } = ctx.params;
+    ctx.body = await User.findOne({ reinitiate_code: code }).lean();
   });
 
 router.get('/:id',
