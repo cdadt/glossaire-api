@@ -8,7 +8,7 @@ const WordSchema = new Schema({
   know_more: String,
   last_edit: Date,
   published: Boolean,
-  img: { data: Buffer, contentType: String, size: String },
+  img: { data: String, size: String },
   themes: [{
     _id: { type: Schema.ObjectId, required: true, alias: 'themes.id' },
     title: { type: String, required: true },

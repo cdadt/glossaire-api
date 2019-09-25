@@ -96,9 +96,9 @@ router.patch('/published',
 router.put('/edit',
   upload.single('image'),
   async (ctx) => {
-    const { wordId } = ctx.req.body;
-    const { elemToEdit } = ctx.req.body;
-    const elemToEditValue = JSON.parse(ctx.req.body.elemToEditValue);
+    const { wordId } = ctx.request.body;
+    const { elemToEdit } = ctx.request.body;
+    const { elemToEditValue } = ctx.request.body;
 
     // On met à jour le titre en vérifiant qu'il n'est déjà pas utilisé
     if (elemToEdit === 'title') {
@@ -133,19 +133,18 @@ router.put('/edit',
     }
 
     // OU on met à jour l'image (si l'élément à modifier est une image et qu'il y a un fichier)
-    if (ctx.req.file && elemToEdit === 'image') {
+    if (ctx.request.body.image && elemToEdit === 'image') {
       ctx.body = await Word.updateOne(
         { _id: wordId }, {
-          'img.data': ctx.req.file.buffer,
-          'img.contentType': ctx.req.file.mimetype,
-          'img.size': ctx.req.body.imageSize,
+          'img.data': ctx.request.body.image,
+          'img.size': ctx.request.body.imageSize,
           last_edit: Date.now(),
         },
       ).lean();
     }
 
     // OU on supprime l'image (si l'élément à modifier est une image et qu'il n'y a pas de fichier)
-    if (!ctx.req.file && elemToEdit === 'image') {
+    if (!ctx.request.body.image && elemToEdit === 'image') {
       ctx.body = await Word.updateOne(
         { _id: wordId }, { $unset: { img: 1, legend: 1 }, last_edit: Date.now() },
       ).lean();
@@ -170,13 +169,15 @@ router.post(
   upload.single('image', 'png'),
   jwt({ secret: config.get('token:secret') }),
   async (ctx) => {
-    const wordInfo = JSON.parse(ctx.req.body.wordInfo);
+    // const wordInfo = JSON.parse(ctx.req.body.wordInfo);
+    const wordInfo = ctx.request.body;
+    console.log(ctx.request.body);
     const newWord = new Word();
 
-    if (ctx.req.file) {
-      newWord.img.data = ctx.req.file.buffer;
-      newWord.img.contentType = ctx.req.file.mimetype;
-      newWord.img.size = ctx.req.body.imageSize;
+    if (wordInfo.image) {
+      newWord.img.data = wordInfo.image;
+      // newWord.img.contentType = ctx.req.file.mimetype;
+      newWord.img.size = wordInfo.imageSize;
     }
     newWord.title = wordInfo.title;
     newWord.definition = wordInfo.definition;

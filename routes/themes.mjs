@@ -68,18 +68,16 @@ router.delete('/',
 router.put('/',
   upload.single('image', 'png'),
   async (ctx) => {
-    const theme = ctx.req.body;
-
+    const theme = ctx.request.body;
     await Word.updateMany({ 'themes._id': theme._id }, { $set: { 'themes.$.title': theme.title } });
 
-    if (ctx.req.file) {
+    if (theme.image) {
       ctx.body = await Theme.updateOne(
         { _id: theme._id }, {
           $set:
             {
               title: theme.title,
-              'img.data': ctx.req.file.buffer,
-              'img.contentType': ctx.req.file.mimetype,
+              'img.data': theme.image,
               'img.size': theme.imageSize,
             },
         },
@@ -111,13 +109,12 @@ router.post(
   async (ctx) => {
     const newTheme = new Theme();
 
-    newTheme.title = ctx.req.body.title.trim();
-    newTheme.published = ctx.req.body.published;
+    newTheme.title = ctx.request.body.title.trim();
+    newTheme.published = ctx.request.body.published;
 
-    if (ctx.req.file) {
-      newTheme.img.data = ctx.req.file.buffer;
-      newTheme.img.contentType = ctx.req.file.mimetype;
-      newTheme.img.size = ctx.req.body.imageSize;
+    if (ctx.request.body.image) {
+      newTheme.img.data = ctx.request.body.image;
+      newTheme.img.size = ctx.request.body.imageSize;
     }
 
     const theme = await Theme.findOne(
