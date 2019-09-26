@@ -21,7 +21,7 @@ const UserSchema = new Schema({
     validated: { type: Boolean, required: true },
     published: { type: Boolean, required: true },
   }],
-  reinitiate_code: String,
+  reset_code: String,
 });
 
 UserSchema.pre('save', function preSave(next) {

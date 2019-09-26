@@ -62,7 +62,7 @@ router.patch('/forgotten-psw',
     // On vérifie que l'user existe et on récupère ses informations
     const user = await User.findOne({ email });
     if (user) {
-      const reinitiateCode = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      const resetCode = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
       const message = `<!DOCTYPE html>
         <html lang="fr">
@@ -73,7 +73,7 @@ router.patch('/forgotten-psw',
           <body>
             <p>Bonjour ${user.firstname},</p>
             <p>Veuillez cliquez sur le lien suivant pour réinitialiser votre mot de passe :</p>
-            <a href="https://angular-test.alwaysdata.net/reinitialiser-mot-de-passe/${reinitiateCode}">
+            <a href="https://angular-test.alwaysdata.net/reinitialiser-mot-de-passe/${resetCode}">
             Réinitialiser le mot de passe.</a>
             <p>Cordialement, l'équipe du Glossaire</p>
           </body>
@@ -84,7 +84,7 @@ router.patch('/forgotten-psw',
 
       sendEmail(email, message, subject);
 
-      await User.updateOne({ _id: user._id.toString() }, { $set: { reinitiate_code: reinitiateCode } });
+      await User.updateOne({ _id: user._id.toString() }, { $set: { reset_code: resetCode } });
     }
 
     ctx.body = !!user;
@@ -94,11 +94,11 @@ router.patch('/change-psw',
   async (ctx) => {
     const { code } = ctx.request.body.params;
     const { psw } = ctx.request.body.params;
-    const user = await User.findOne({ reinitiate_code: code });
+    const user = await User.findOne({ reset_code: code });
 
     await User.updateOne(
-      { reinitiate_code: code },
-      { $unset: { reinitiate_code: 1 } },
+      { reset_code: code },
+      { $unset: { reset_code: 1 } },
     ).lean();
 
     user.password = psw;
@@ -109,7 +109,7 @@ router.patch('/change-psw',
 router.get('/verif-reset-psw-code/:code',
   async (ctx) => {
     const { code } = ctx.params;
-    ctx.body = await User.findOne({ reinitiate_code: code }).lean();
+    ctx.body = await User.findOne({ reset_code: code }).lean();
   });
 
 router.get('/:id',
