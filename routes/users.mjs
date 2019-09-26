@@ -57,7 +57,6 @@ router.get('/bookmarkpresence',
 
 router.patch('/forgotten-psw',
   async (ctx) => {
-    console.log('test');
     const { email } = ctx.request.body.params;
 
     // On vérifie que l'user existe et on récupère ses informations

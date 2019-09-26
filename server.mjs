@@ -1,7 +1,7 @@
 import Koa from 'koa';
 import cors from '@koa/cors';
 import bodyParser from 'koa-bodyparser';
-// import { Process as process } from 'node';
+import './helpers/cron';
 import config from './services/config';
 import mongooseConnection from './services/mongoose';
 import routes from './routes/index';
