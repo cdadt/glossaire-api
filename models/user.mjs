@@ -45,6 +45,7 @@ UserSchema.methods.signJWT = function signJWT() {
   const payload = {
     email: this.email,
     username: this.username,
+    permissions: this.permissions,
   };
 
   return jwt.sign(

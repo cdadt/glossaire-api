@@ -183,13 +183,19 @@ router.post(
     if (!user) {
       ctx.assert(!user, 409, `L'utilisateur "${body.username}" n'existe pas.`);
     } else {
-      const usersSameUsernameEmail = await User.find()
+      const usersSameUsername = await User.find()
         .where('_id').ne(body._id)
-        .or([{ username: body.username }, { email: body.email }]);
+        .where('username').equals(body.username);
+
+      const usersSameEmail = await User.find()
+        .where('_id').ne(body._id)
+        .where('email').equals(body.email);
 
       // On vérifie que l'username et le mail n'existe pas déjà
-      if (usersSameUsernameEmail.length > 0) {
+      if (usersSameUsername.length > 0) {
         ctx.assert(!user, 409, 'Un utilisateur possède déjà cet username.');
+      } else if (usersSameEmail.length > 0) {
+        ctx.assert(!user, 409, 'Un utilisateur possède déjà cet email.');
       } else {
         if (body.password && body.password !== '') {
           user.password = body.password;
