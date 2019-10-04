@@ -6,7 +6,6 @@ import config from '../services/config';
 import User from '../models/user';
 
 const router = new Router();
-// const upload = Multer({ dest: 'uploads/' });
 const storage = Multer.memoryStorage();
 const upload = Multer({ storage });
 
@@ -68,16 +67,17 @@ router.get('/get-waiting', async (ctx) => {
 router.get('/:id', async (ctx) => {
   const { id } = ctx.params;
   const word = await Word.findById(id).lean();
-  if (!word.validated || !word.published) {
-    const wordSimplified = new Word();
-    wordSimplified._id = word._id;
-    wordSimplified.title = word.title;
-    wordSimplified.published = word.published;
-    wordSimplified.validated = word.validated;
-    ctx.body = wordSimplified;
-  } else {
-    ctx.body = word;
-  }
+  // if (!word.validated || !word.published) {
+  //   const wordSimplified = new Word();
+  //   wordSimplified._id = word._id;
+  //   wordSimplified.title = word.title;
+  //   wordSimplified.published = word.published;
+  //   wordSimplified.validated = word.validated;
+  //   ctx.body = wordSimplified;
+  // } else {
+  //   ctx.body = word;
+  // }
+  ctx.body = word;
 });
 
 router.patch('/published',
@@ -169,9 +169,7 @@ router.post(
   upload.single('image', 'png'),
   jwt({ secret: config.get('token:secret') }),
   async (ctx) => {
-    // const wordInfo = JSON.parse(ctx.req.body.wordInfo);
-    const wordInfo = ctx.request.body;
-    console.log(ctx.request.body);
+    const { wordInfo } = ctx.request.body;
     const newWord = new Word();
 
     if (wordInfo.image) {

@@ -126,18 +126,18 @@ router.post(
     const { request: { body } } = ctx;
 
     // On vérifie si que l'username n'est pas déjà utilisé
-    let user = await User.findOne({ username: body.username });
+    let user = await User.findOne({ username: body.user.username });
     if (user) {
-      ctx.assert(!user, 409, `L'utilisateur "${body.username}" existe déjà.`);
+      ctx.assert(!user, 409, `L'utilisateur "${body.user.username}" existe déjà.`);
     }
 
     // On vérifie que l'email n'est pas déjà utilisé
-    user = await User.findOne({ email: body.email });
+    user = await User.findOne({ email: body.user.email });
     if (user) {
       ctx.assert(!user, 409, 'Ce mail est déjà utilisé.');
     }
 
-    ctx.body = User.create(body);
+    ctx.body = User.create(body.user);
   },
 );
 
@@ -177,19 +177,19 @@ router.post(
   jwt({ secret: config.get('token:secret') }),
   async (ctx) => {
     const { request: { body } } = ctx;
-    const user = await User.findById(body._id);
+    const user = await User.findById(body.user.user._id);
 
     // On vérifie que l'utilisateur existe bien
     if (!user) {
-      ctx.assert(!user, 409, `L'utilisateur "${body.username}" n'existe pas.`);
+      ctx.assert(!user, 409, `L'utilisateur "${body.user.username}" n'existe pas.`);
     } else {
       const usersSameUsername = await User.find()
-        .where('_id').ne(body._id)
-        .where('username').equals(body.username);
+        .where('_id').ne(body.user._id)
+        .where('username').equals(body.user.username);
 
       const usersSameEmail = await User.find()
-        .where('_id').ne(body._id)
-        .where('email').equals(body.email);
+        .where('_id').ne(body.user._id)
+        .where('email').equals(body.user.email);
 
       // On vérifie que l'username et le mail n'existe pas déjà
       if (usersSameUsername.length > 0) {
@@ -197,15 +197,15 @@ router.post(
       } else if (usersSameEmail.length > 0) {
         ctx.assert(!user, 409, 'Un utilisateur possède déjà cet email.');
       } else {
-        if (body.password && body.password !== '') {
-          user.password = body.password;
+        if (body.user.password && body.user.password !== '') {
+          user.password = body.user.password;
         }
-        user.username = body.username;
-        user.email = body.email;
-        user.firstname = body.firstname;
-        user.lastname = body.lastname;
-        user.activated = body.activated;
-        user.permissions = body.permissions;
+        user.username = body.user.username;
+        user.email = body.user.email;
+        user.firstname = body.user.firstname;
+        user.lastname = body.user.lastname;
+        user.activated = body.user.activated;
+        user.permissions = body.user.permissions;
 
         ctx.body = await user.save();
       }

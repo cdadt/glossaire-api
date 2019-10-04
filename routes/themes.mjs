@@ -109,12 +109,12 @@ router.post(
   async (ctx) => {
     const newTheme = new Theme();
 
-    newTheme.title = ctx.request.body.title.trim();
-    newTheme.published = ctx.request.body.published;
+    newTheme.title = ctx.request.body.theme.title.trim();
+    newTheme.published = ctx.request.body.theme.published;
 
-    if (ctx.request.body.image) {
-      newTheme.img.data = ctx.request.body.image;
-      newTheme.img.size = ctx.request.body.imageSize;
+    if (ctx.request.body.theme.image) {
+      newTheme.img.data = ctx.request.body.theme.image;
+      newTheme.img.size = ctx.request.body.theme.imageSize;
     }
 
     const theme = await Theme.findOne(
