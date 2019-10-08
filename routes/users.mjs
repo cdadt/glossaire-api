@@ -177,7 +177,7 @@ router.post(
   jwt({ secret: config.get('token:secret') }),
   async (ctx) => {
     const { request: { body } } = ctx;
-    const user = await User.findById(body.user.user._id);
+    const user = await User.findById(body.user._id);
 
     // On vérifie que l'utilisateur existe bien
     if (!user) {
