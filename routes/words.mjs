@@ -67,16 +67,6 @@ router.get('/get-waiting', async (ctx) => {
 router.get('/:id', async (ctx) => {
   const { id } = ctx.params;
   const word = await Word.findById(id).lean();
-  // if (!word.validated || !word.published) {
-  //   const wordSimplified = new Word();
-  //   wordSimplified._id = word._id;
-  //   wordSimplified.title = word.title;
-  //   wordSimplified.published = word.published;
-  //   wordSimplified.validated = word.validated;
-  //   ctx.body = wordSimplified;
-  // } else {
-  //   ctx.body = word;
-  // }
   ctx.body = word;
 });
 
@@ -87,7 +77,7 @@ router.patch('/published',
 
     await User.updateMany({ 'bookmark._id': wordId }, { $set: { 'bookmark.$.published': wordPub } });
 
-    // On met à jour le thème lui-même
+    // On met à jour le mot lui-même
     ctx.body = await Word.updateOne(
       { _id: wordId }, { published: wordPub },
     ).lean();

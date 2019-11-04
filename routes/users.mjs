@@ -157,11 +157,11 @@ router.post('/bookmark',
   jwt({ secret: config.get('token:secret') }),
   async (ctx) => {
     const { request: { body } } = ctx;
-    const { userID } = body;
-    const { bookmark } = body;
+    const { userID } = body.params;
+    const { bookmark } = body.params;
 
     // On vérifie si que l'username n'est pas déjà utilisé
-    const user = await User.findOne({ 'bookmark.id': body.bookmark._id });
+    const user = await User.findOne({ 'bookmark.id': bookmark._id });
     if (user) {
       ctx.assert(!user, 409, 'Vous possédez déjà ce favori.');
     }
