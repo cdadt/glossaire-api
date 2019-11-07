@@ -185,11 +185,13 @@ router.post(
     } else {
       const usersSameUsername = await User.find()
         .where('_id').ne(body.user._id)
-        .where('username').equals(body.user.username);
+        .where('username')
+        .equals(body.user.username);
 
       const usersSameEmail = await User.find()
         .where('_id').ne(body.user._id)
-        .where('email').equals(body.user.email);
+        .where('email')
+        .equals(body.user.email);
 
       // On vérifie que l'username et le mail n'existe pas déjà
       if (usersSameUsername.length > 0) {
