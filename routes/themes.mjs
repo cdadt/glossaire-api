@@ -48,7 +48,7 @@ router.get('/:id', async (ctx) => {
 
 router.get('/:id/words', async (ctx) => {
   const { id } = ctx.params;
-  ctx.body = await Word.find({ 'themes._id': id }).lean();
+  ctx.body = await Word.find({ 'themes._id': id, validated: true, published: true }).sort({ title: 'asc' }).lean();
 });
 
 router.delete('/',
@@ -84,7 +84,7 @@ router.put('/',
       );
     } else {
       ctx.body = await Theme.updateOne(
-        { _id: theme._id }, { $set: { title: theme.title } },
+        { _id: theme._id }, { $set: { title: theme.title }, $unset: { img: '' } },
       );
     }
   });
@@ -107,6 +107,17 @@ router.post(
   upload.single('image', 'png'),
   jwt({ secret: config.get('token:secret') }),
   async (ctx) => {
+    const theme = await Theme.findOne(
+      {
+        title:
+          {
+            $regex: ctx.request.body.theme.title.trim(),
+            $options: 'i',
+          },
+      },
+    ).lean();
+    ctx.assert(!theme, 409, `Le thème '${ctx.request.body.theme.title.trim()}' existe déjà.`);
+
     const newTheme = new Theme();
 
     newTheme.title = ctx.request.body.theme.title.trim();
@@ -117,17 +128,6 @@ router.post(
       newTheme.img.size = ctx.request.body.theme.imageSize;
     }
 
-    const theme = await Theme.findOne(
-      {
-        title:
-            {
-              $regex: newTheme.title,
-              $options: 'i',
-            },
-      },
-    ).lean();
-
-    ctx.assert(!theme, 409, `Le thème '${newTheme.title}' existe déjà.`);
     ctx.body = await Theme.create(newTheme);
   },
 );
