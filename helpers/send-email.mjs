@@ -16,6 +16,9 @@ export const sendEmail = async (email, message, subject) => {
       user: 'serveur.test.hebergement@outlook.fr',
       pass: 'Serveurtest!19',
     },
+    tls: {
+      rejectUnauthorized: false,
+    },
   });
 
   await transporter.sendMail({

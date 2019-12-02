@@ -73,7 +73,7 @@ router.patch('/forgotten-psw',
           <body>
             <p>Bonjour ${user.firstname},</p>
             <p>Veuillez cliquez sur le lien suivant pour réinitialiser votre mot de passe :</p>
-            <a href="https://angular-test.alwaysdata.net/reinitialiser-mot-de-passe/${resetCode}">
+            <a href="https://glossaire-test.alwaysdata.net/reinitialiser-mot-de-passe/${resetCode}">
             Réinitialiser le mot de passe.</a>
             <p>Cordialement, l'équipe du Glossaire</p>
           </body>
