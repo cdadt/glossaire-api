@@ -8,6 +8,9 @@ const SubscriberSchema = new Schema({
     auth: { type: String, required: true },
     p256dh: { type: String, required: true },
   },
+},
+{
+  collation: { locale: 'fr', strength: 1 },
 });
 
 export default mongoose.model('Subscriber', SubscriberSchema);

@@ -22,6 +22,9 @@ const UserSchema = new Schema({
     published: { type: Boolean, required: true },
   }],
   reset_code: String,
+},
+{
+  collation: { locale: 'fr', strength: 1 },
 });
 
 UserSchema.pre('save', function preSave(next) {

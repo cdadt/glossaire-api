@@ -16,6 +16,9 @@ const WordSchema = new Schema({
   }],
   legend: String,
   validated: Boolean,
+},
+{
+  collation: { locale: 'fr', strength: 1 },
 });
 
 export default mongoose.model('Word', WordSchema);
